@@ -1,6 +1,5 @@
 import asyncHandler from "express-async-handler";
-
-// Add Task
+// import db from "./config/db.js";
 const test = asyncHandler(async (req, res) => {
   try {
     res.send("Hello, Developer's all set you are good to go!");
