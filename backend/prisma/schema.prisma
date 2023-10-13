@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model event_attendees {
+  attendance_id Int       @id
+  event_id      Int?
+  user_id       Int?
+  Time_stam     DateTime? @db.DateTime(0)
+  is_approved   Boolean?
+  has_attended  Boolean?
+  events        events?   @relation(fields: [event_id], references: [event_id], onDelete: NoAction, onUpdate: NoAction, map: "event_attendees_ibfk_1")
+  users         users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "event_attendees_ibfk_2")
+
+  @@index([event_id], map: "event_id")
+  @@index([user_id], map: "user_id")
+}
+
+model events {
+  event_id        Int                @id
+  organizer_id    Int?
+  event_name      String?            @db.VarChar(255)
+  description     String?            @db.Text
+  start_date      DateTime?          @db.DateTime(0)
+  end_date        DateTime?          @db.DateTime(0)
+  venue_id        Int?
+  event_type      events_event_type?
+  time_zone       String?            @db.VarChar(255)
+  event_attendees event_attendees[]
+  organizers      organizers?        @relation(fields: [organizer_id], references: [organizer_id], onDelete: NoAction, onUpdate: NoAction, map: "events_ibfk_1")
+  venues          venues?            @relation(fields: [venue_id], references: [venue_id], onDelete: NoAction, onUpdate: NoAction, map: "events_ibfk_2")
+
+  @@index([organizer_id], map: "organizer_id")
+  @@index([venue_id], map: "venue_id")
+}
+
+model organizers {
+  organizer_id      Int      @id
+  user_id           Int?     @unique(map: "user_id")
+  organization_name String?  @db.VarChar(255)
+  about             String?  @db.Text
+  events            events[]
+  users             users?   @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "organizers_ibfk_1")
+}
+
+model users {
+  user_id         Int               @id
+  username        String?           @unique(map: "username") @db.VarChar(255)
+  password_hash   String?           @db.VarChar(255)
+  email           String?           @unique(map: "email") @db.VarChar(255)
+  first_name      String?           @db.VarChar(255)
+  last_name       String?           @db.VarChar(255)
+  user_type       users_user_type?
+  joined          DateTime?         @db.DateTime(0)
+  last_login      DateTime?         @db.DateTime(0)
+  event_attendees event_attendees[]
+  organizers      organizers?
+}
+
+model venues {
+  venue_id   Int      @id
+  venue_name String?  @db.VarChar(255)
+  address    String?  @db.Text
+  capacity   Int?
+  events     events[]
+}
+
+enum users_user_type {
+  attendee
+  organizer
+  admin
+}
+
+enum events_event_type {
+  online
+  offline
+  hybrid
+}
